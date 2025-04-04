@@ -1,12 +1,16 @@
-import logo from './logo.svg';
-import './App.css';
+import React from "react";
+import { Routes, Route, BrowserRouter } from "react-router-dom";
+import "./App.css";
+import ChatWithAi from "./Component/ChatWithAi";
 
-function App() {
+const App = () => {
   return (
-    <div>
-      <p>welcome</p>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<ChatWithAi />} />
+      </Routes>
+    </BrowserRouter>
   );
-}
+};
 
 export default App;
