@@ -1,6 +1,6 @@
 
 const modelConfig = {
-    id: "deepseek/deepseek-v3-base:free",
+    id: "google/gemini-2.0-pro-exp-02-05:free",
     name: "Gemini 2.0 Flash",
     provider: "OpenRouter",
     maxTokens: 1000,

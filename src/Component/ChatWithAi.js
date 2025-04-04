@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from "react";
 import { TextField, IconButton, Paper, List, ListItem, ListItemText, Avatar } from "@mui/material";
 import SendIcon from "@mui/icons-material/Send";
@@ -40,11 +41,12 @@ const ChatWithAi = () => {
         };
     }, []);
 
-    const handleSendMessage = () => {
+    const handleSendMessage = async () => {
         if (!newMessage.trim()) return;
 
+        const messageId = Math.random().toString();
         const userMessage = {
-            id: Math.random().toString(),
+            id: messageId,
             role: "user",
             content: newMessage,
             createdAt: new Date(),
@@ -53,9 +55,10 @@ const ChatWithAi = () => {
         setMessages((prev) => [...prev, userMessage]);
         setNewMessage("");
 
-        // Call AI API for response
-        ChatAIApi(userMessage.content);
+        await checkGrammarMisteks(userMessage.content, messageId); // Pass the messageId
+        await ChatAIApi(userMessage.content);
     };
+
 
     const handleMicClick = () => {
         if (!recognitionRef.current) return;
@@ -70,10 +73,14 @@ const ChatWithAi = () => {
 
     const ChatAIApi = async (userMessage) => {
         setLoading(true);
+
         const API_URL = "https://openrouter.ai/api/v1/chat/completions";
-        const API_KEY = "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";
+        const API_KEY = "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";
 
-
+        if (!API_KEY) {
+            console.error("API key missing for grammar check");
+            return;
+        }
         const systemPrompt = `You are John, an expert English teacher with 5+ years of experience teaching ESL students.
       - Keep responses conversational and engaging.
       - Limit responses to 2-3 sentences maximum.
@@ -82,11 +89,11 @@ const ChatWithAi = () => {
       `;
 
         const modelConfig = {
-            id: "openchat/openchat-7b:free",
+            id: "openchat/openchat-3.5-0106:free",
             name: "Gemini 2.0 Flash",
             provider: "OpenRouter",
-            maxTokens: 1000,
-            temperature: 0.7,
+            maxTokens: 50,
+            temperature: 0.5,
             description: "Powerful model with strong language capabilities"
         };
         const apiMessages = [
@@ -126,6 +133,73 @@ const ChatWithAi = () => {
         }
         setLoading(false);
     };
+
+
+
+    const checkGrammarMisteks = async (text, messageId) => {
+        const grammarSystemPrompt = `
+            You are an expert English teacher. Your task is to find grammar and spelling mistakes in the user's sentence and suggest a corrected version.
+            - Only return the corrected version of the sentence.
+            - If the sentence is already correct, reply with: "The sentence is grammatically correct."
+        `;
+
+        const apiMessages = [
+            { role: "system", content: grammarSystemPrompt },
+            { role: "user", content: text },
+        ];
+
+        const API_URL = "https://openrouter.ai/api/v1/chat/completions";
+        const API_KEY = "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";
+
+        try {
+            const response = await fetch(API_URL, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${API_KEY}`,
+                },
+                body: JSON.stringify({
+                    model: "openchat/openchat-3.5-0106:free",
+                    messages: apiMessages,
+                    temperature: 0.5,
+                    max_tokens: 1000,
+                }),
+            });
+
+            const data = await response.json();
+            const grammarFeedback = data.choices[0]?.message?.content;
+
+            if (grammarFeedback) {
+                setMessages((prevMessages) =>
+                    prevMessages.map((msg) =>
+                        msg.id === messageId
+                            ? { ...msg, grammarCorrection: grammarFeedback }
+                            : msg
+                    )
+                );
+            }
+        } catch (error) {
+            console.error("Grammar check failed:", error);
+        }
+    };
+
+
+    const highlightChanges = (original, corrected) => {
+        const originalWords = original.split(" ");
+        const correctedWords = corrected.split(" ");
+        console.log("originalWords", originalWords, "correctedWords", correctedWords);
+        return correctedWords.map((word, index) => {
+            if (!originalWords.includes(word)) {
+                // Highlight changed words in red
+                return (
+                    <span key={index} style={{ color: "red", fontWeight: "bold" }}>
+                        {word}{" "}
+                    </span>
+                );
+            }
+            return word + " ";
+        });
+    };
     return (
         <div className="container">
             <Paper className="chat-box">
@@ -141,27 +215,34 @@ const ChatWithAi = () => {
                         </IconButton>
                     </div>
                 </div>
-                {/* 
-        <List className="messages-list">
-          {messages.map((msg) => (
-            <ListItem key={msg.id} className={`list-item ${msg.role}`}>
-              <Paper className={`chat-bubble ${msg.role}`}>
-                <ListItemText primary={msg.content} secondary={moment(msg.createdAt).format("hh:mm A")} />
-              </Paper>
-              
-            </ListItem>
-          ))}
-        </List> */}
+
                 <List className="messages-list">
                     {messages.map((msg) => (
-                        <ListItem key={msg.id} className={`list-item ${msg.role}`}>
-                            <Paper className={`chat-bubble ${msg.role}`}>
-                                <ListItemText primary={msg.content} secondary={moment(msg.createdAt).format("hh:mm A")} />
-                            </Paper>
-                        </ListItem>
+                        <React.Fragment key={msg.id}>
+                            <ListItem className={`list-item ${msg.role}`}>
+                                <Paper className={`chat-bubble ${msg.role}`}>
+                                    <ListItemText
+                                        primary={msg.content}
+                                        secondary={moment(msg.createdAt).format("hh:mm A")}
+                                    />
+                                </Paper>
+                            </ListItem>
+
+                            {msg.grammarCorrection && (
+                                <ListItem className="list-item grammar-check">
+                                    <Paper className="chat-bubble grammar">
+                                        <ListItemText
+                                            primary={
+                                                <span>📝Grammer Check: {highlightChanges(msg.content, msg.grammarCorrection)}</span>
+                                            }
+                                        />
+                                    </Paper>
+                                </ListItem>
+                            )}
+
+                        </React.Fragment>
                     ))}
 
-                    {/* Show loading state when waiting for AI response */}
                     {loading && (
                         <ListItem className="list-item bot">
                             <Paper className="chat-bubble bot">
@@ -170,6 +251,9 @@ const ChatWithAi = () => {
                         </ListItem>
                     )}
                 </List>
+
+
+
                 <div className="input-container">
                     <IconButton onClick={handleMicClick}>
                         <MicIcon color={isListening ? "secondary" : "primary"} />
