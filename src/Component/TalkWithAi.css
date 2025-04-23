@@ -1,0 +1,172 @@
+p{
+  margin: 0;
+  padding: 0;
+}
+  
+  .container {
+    max-width: 480px;
+    margin: 0 auto;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #1a4645 100%);
+    color: white;
+  }
+  
+  header {
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  header h1 {
+    font-size: 1.5rem;
+    font-weight: normal;
+  }
+  
+  .back-button, .settings-button {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0.5rem;
+  }
+  
+  .main_content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    padding: 10px;
+    overflow-y: auto; 
+  }
+  
+  .avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+  }
+  
+  .avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 100%;
+  }
+  
+  .continue-button {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: white;
+    padding: 1rem 2rem;
+    border-radius: 2rem;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .continue-button:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+  
+  footer {
+    padding: 1rem;
+    display: flex;
+    justify-content: space-around;
+    background: rgba(0, 0, 0, 0.2);
+  }
+  
+  .control-button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: none;
+    border: none;
+    color: white;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: opacity 0.3s;
+  }
+  
+  .control-button:hover {
+    opacity: 0.8;
+  }
+  
+  .control-button .icon {
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+  }
+  
+  .control-button.end .icon {
+    background: #ff4757;
+  }
+  
+  .control-button .label {
+    font-size: 0.9rem;
+    opacity: 0.8;
+  }
+  
+  @media (max-width: 480px) {
+    .container {
+      width: 100%;
+    }
+    
+    .control-button .label {
+      font-size: 0.8rem;
+    }
+    .main_content {
+      overflow-y: auto;
+      justify-content: flex-start;
+    }
+  }
+  .user-transcript, .bot-response {
+    padding: 10px;
+    background: #f2f2f2;
+    border-radius: 10px;
+    max-width: 80%;
+    color: mediumvioletred;
+  }
+
+
+
+  .speak-again-button {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    padding: 0.8rem 1.5rem;
+    border: none;
+    border-radius: 2rem;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.3s, transform 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .speak-again-button:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.05);
+  }
+  
+  .speak-again-button:active {
+    transform: scale(0.98);
+  }
+  .speak-again-button .icon {
+    font-size: 1.2rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
