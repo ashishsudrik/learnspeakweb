@@ -9,10 +9,7 @@ import {
   X,
 } from "lucide-react";
 import "./TalkWithAi.css";
-// const API_KEY = "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";
-// const MODEL_ID = "google/gemini-2.0-flash-thinking-exp:free";
-
-const API_KEY = "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";
+const API_KEY = "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";
 const MODEL_ID = "google/gemini-2.0-flash-001";
 
 const API_URL = "https://openrouter.ai/api/v1/chat/completions";
@@ -52,7 +49,6 @@ const TalkWithAi = () => {
       setTranscript(text);
       sendToAi(text);
     };
-
     recognition.start();
   };
 
@@ -92,10 +88,6 @@ Limit responses to 2–3 sentences unless the user asks for more detail.
           temperature: modelConfig.temperature,
           max_tokens: modelConfig.maxTokens,
         }),
-        // body: JSON.stringify({
-        //   model: MODEL_ID,
-        //   messages: [{ role: "user", content: message }],
-        // }),
       });
       const data = await res.json();
       const aiText =
@@ -104,6 +96,13 @@ Limit responses to 2–3 sentences unless the user asks for more detail.
         "No response";
 
       setResponse(aiText);
+      window.ReactNativeWebView.postMessage(JSON.stringify({
+        type: "AI_RESPONSE",
+        data: aiText,
+      }));
+      
+      return aiText;
+      
     } catch (error) {
       console.error("Error:", error);
       setResponse("Error getting response from AI.");
@@ -113,6 +112,7 @@ Limit responses to 2–3 sentences unless the user asks for more detail.
   };
 
   const speakText = (text) => {
+    
     if (!window.speechSynthesis) {
       console.warn("Speech synthesis not supported in this browser.");
       return;
@@ -135,19 +135,19 @@ Limit responses to 2–3 sentences unless the user asks for more detail.
       const selectedVoice = voices.find((voice) => voice.lang === "en-US");
       if (selectedVoice) utterance.voice = selectedVoice;
     }
-  
     window.speechSynthesis.speak(utterance);
   };
   
   useEffect(() => {
     if (hasInteracted && response && !loading) {
-      speakText(response);
+       speakText(response);
     }
   }, [response, loading, hasInteracted]);
 
   useEffect(() => {
     responseRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [response]);
+
 
   return (
     <div className="container">
@@ -218,3 +218,6 @@ Limit responses to 2–3 sentences unless the user asks for more detail.
 };
 
 export default TalkWithAi;
+
+
+
