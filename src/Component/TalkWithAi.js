@@ -9,7 +9,7 @@ import {
   X,
 } from "lucide-react";
 import "./TalkWithAi.css";
-const API_KEY = "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";
+const API_KEY = "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";
 const MODEL_ID = "google/gemini-2.0-flash-001";
 
 const API_URL = "https://openrouter.ai/api/v1/chat/completions";
@@ -96,12 +96,15 @@ Limit responses to 2–3 sentences unless the user asks for more detail.
         "No response";
 
       setResponse(aiText);
-      window.ReactNativeWebView.postMessage(JSON.stringify({
-        type: "AI_RESPONSE",
-        data: aiText,
-      }));
-      
-      return aiText;
+      if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {
+        window.ReactNativeWebView.postMessage(
+          JSON.stringify({
+            type: "AI_RESPONSE",
+            data: aiText,
+          })
+        );
+      }
+      // return aiText;
       
     } catch (error) {
       console.error("Error:", error);
