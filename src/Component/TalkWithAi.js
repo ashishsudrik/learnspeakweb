@@ -8,9 +8,11 @@ import {
   FastForward,
   X,
   PauseIcon,
-  Repeat
+  Repeat,
+  Navigation
 } from "lucide-react";
 import "./TalkWithAi.css";
+import { useNavigate } from "react-router-dom"; 
 const API_KEY = "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";
 const MODEL_ID = "google/gemini-2.0-flash-001";
 
@@ -180,7 +182,11 @@ Limit responses to 2–3 sentences unless the user asks for more detail.
   return (
     <div className="container">
       <header>
-        <button className="back-button">
+        <button className="back-button" onClick={()=>{
+           if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {
+            window.ReactNativeWebView.postMessage(JSON.stringify({ type: "GO_BACK" ,data:'go back'}));
+          }
+        }}>
           <ArrowLeft size={24} />
         </button>
         <h1>Talk about anything</h1>
@@ -229,7 +235,10 @@ Limit responses to 2–3 sentences unless the user asks for more detail.
           {isPaused ? <Play size={20} /> : <PauseIcon size={20} />}
           <span className="label">{isPaused ? "Resume" : "Pause"}</span>
         </button>
-        <button className="control-button end" onClick={()=>{window.history.back()}}>
+        <button className="control-button end" onClick={()=>{
+           if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {
+            window.ReactNativeWebView.postMessage(JSON.stringify({ type: "End_Talk" ,data:'go back'}));
+          }}}>
           <X size={20} />
           <span className="label">End</span>
         </button>
