@@ -7,6 +7,8 @@ import {
   Play,
   FastForward,
   X,
+  PauseIcon,
+  Repeat
 } from "lucide-react";
 import "./TalkWithAi.css";
 const API_KEY = "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";
@@ -19,6 +21,8 @@ const TalkWithAi = () => {
   const [response, setResponse] = useState("");
   const [loading, setLoading] = useState(false);
   const [hasInteracted, setHasInteracted] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+
   const responseRef = useRef(null);
 
   const handleMic = () => {
@@ -93,7 +97,7 @@ Limit responses to 2–3 sentences unless the user asks for more detail.
       const aiText =
         data.choices?.[0]?.message?.content ||
         data.candidates?.[0]?.content?.parts?.[0]?.text ||
-        "No response";
+        "Error getting response from API key";
 
       setResponse(aiText);
       if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {
@@ -105,7 +109,7 @@ Limit responses to 2–3 sentences unless the user asks for more detail.
         );
       }
       // return aiText;
-      
+
     } catch (error) {
       console.error("Error:", error);
       setResponse("Error getting response from AI.");
@@ -114,25 +118,26 @@ Limit responses to 2–3 sentences unless the user asks for more detail.
     }
   };
 
-  const speakText = (text) => {
-    
+  const speakText = async (text) => {
+
     if (!window.speechSynthesis) {
       console.warn("Speech synthesis not supported in this browser.");
       return;
     }
-  
+
     // Cancel any ongoing speech
     window.speechSynthesis.cancel();
-  
+
+
     // Get available voices
     const voices = window.speechSynthesis.getVoices();
-  
+
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = "en-US";
     utterance.pitch = 1;
     utterance.rate = 1;
     utterance.volume = 1;
-  
+
     // Optional: set a specific voice
     if (voices.length > 0) {
       const selectedVoice = voices.find((voice) => voice.lang === "en-US");
@@ -140,10 +145,10 @@ Limit responses to 2–3 sentences unless the user asks for more detail.
     }
     window.speechSynthesis.speak(utterance);
   };
-  
+
   useEffect(() => {
     if (hasInteracted && response && !loading) {
-       speakText(response);
+      speakText(response);
     }
   }, [response, loading, hasInteracted]);
 
@@ -151,7 +156,27 @@ Limit responses to 2–3 sentences unless the user asks for more detail.
     responseRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [response]);
 
+  const SpeakAgain = () => {
+    speakText(response)
+    if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {
+      window.ReactNativeWebView.postMessage(JSON.stringify({ type: "SpeakAgain_RESPONSE", data: response, }));
+    }
+  }
 
+  const PauseResponse = () => {
+    if (isPaused) {
+      if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {
+        window.ReactNativeWebView.postMessage(JSON.stringify({ type: "RESUME_RESPONSE", data: response }));
+        setIsPaused(false);
+      }
+    } else {
+      if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {
+        window.ReactNativeWebView.postMessage(JSON.stringify({ type: "PAUSE_RESPONSE", data: response }));
+        setIsPaused(true);
+
+      }
+    }
+  }
   return (
     <div className="container">
       <header>
@@ -159,13 +184,11 @@ Limit responses to 2–3 sentences unless the user asks for more detail.
           <ArrowLeft size={24} />
         </button>
         <h1>Talk about anything</h1>
-        <button className="settings-button">
-          <Settings size={24} />
-        </button>
+       
       </header>
 
-    
-        <div className="main_content">
+
+      <div className="main_content">
         <div className="avatar user-avatar">
           <img
             src="https://placehold.co/100x100/grey/white?text=User"
@@ -174,9 +197,9 @@ Limit responses to 2–3 sentences unless the user asks for more detail.
         </div>
         {
           transcript &&
-            <p className="user-transcript">{transcript}</p>
+          <p className="user-transcript">{transcript}</p>
         }
-        
+
 
         <div className="avatar bot-avatar">
           <img
@@ -184,37 +207,33 @@ Limit responses to 2–3 sentences unless the user asks for more detail.
             alt="Bot Avatar"
           />
         </div>
-       {(loading || response) && (
-  <p className="bot-response" ref={responseRef}>
-    {loading ? "Thinking..." : response}
-  </p>
-)}
+        {(loading || response) && (
+          <p className="bot-response" ref={responseRef}>
+            {loading ? "Thinking..." : response}
+          </p>
+        )}
 
         <button className="continue-button" onClick={handleMic}>
           {listening ? "Listening..." : "Press to continue"}
         </button>
 
-        {response && (
-          <button className="speak-again-button" onClick={() => speakText(response)}>
-            🔊 Speak Again
-          </button>
-        )}
-        </div>
-      
+      </div>
+
 
       <footer>
-        <button className="control-button hint">
-          <Sparkles size={20} />
-          <span className="label">Hint</span>
+        <button className="control-button continue" onClick={SpeakAgain}>
+          <Repeat size={20} />
+          <span className="label">Speak Again</span>
         </button>
-        <button className="control-button continue">
-          <FastForward size={20} />
-          <span className="label">Continue</span>
+        <button className="control-button pause" onClick={PauseResponse} >
+          {isPaused ? <Play size={20} /> : <PauseIcon size={20} />}
+          <span className="label">{isPaused ? "Resume" : "Pause"}</span>
         </button>
-        <button className="control-button end">
+        <button className="control-button end" onClick={()=>{window.history.back()}}>
           <X size={20} />
           <span className="label">End</span>
         </button>
+
       </footer>
     </div>
   );
