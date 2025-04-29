@@ -9,10 +9,16 @@ import {
   X,
   PauseIcon,
   Repeat,
-  Navigation
+  Navigation,
+  Mic
 } from "lucide-react";
 import "./TalkWithAi.css";
 import { useNavigate } from "react-router-dom"; 
+const BOT_IMAGE = require('../images/Bot_image.png');
+
+const USER_IMAGE = require('../images/User_image.png');
+
+
 const API_KEY = "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";
 const MODEL_ID = "google/gemini-2.0-flash-001";
 
@@ -181,7 +187,7 @@ Limit responses to 2–3 sentences unless the user asks for more detail.
   }
   return (
     <div className="container">
-      <header>
+      <header className="TalkAi_header">
         <button className="back-button" onClick={()=>{
            if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {
             window.ReactNativeWebView.postMessage(JSON.stringify({ type: "GO_BACK" ,data:'go back'}));
@@ -196,10 +202,7 @@ Limit responses to 2–3 sentences unless the user asks for more detail.
 
       <div className="main_content">
         <div className="avatar user-avatar">
-          <img
-            src="https://placehold.co/100x100/grey/white?text=User"
-            alt="User Avatar"
-          />
+        <img src={USER_IMAGE} alt="User"  />
         </div>
         {
           transcript &&
@@ -208,10 +211,7 @@ Limit responses to 2–3 sentences unless the user asks for more detail.
 
 
         <div className="avatar bot-avatar">
-          <img
-            src="https://placehold.co/100x100/grey/white?text=Bot"
-            alt="Bot Avatar"
-          />
+        <img src={BOT_IMAGE} alt="Bot" />
         </div>
         {(loading || response) && (
           <p className="bot-response" ref={responseRef}>
@@ -220,9 +220,8 @@ Limit responses to 2–3 sentences unless the user asks for more detail.
         )}
 
         <button className="continue-button" onClick={handleMic}>
-          {listening ? "Listening..." : "Press to continue"}
+          {listening ? "Listening..." : "Speak Now"}
         </button>
-
       </div>
 
 
@@ -230,6 +229,10 @@ Limit responses to 2–3 sentences unless the user asks for more detail.
         <button className="control-button continue" onClick={SpeakAgain}>
           <Repeat size={20} />
           <span className="label">Speak Again</span>
+        </button>
+        <button className="control-button continue" >
+          <Mic size={20} />
+          <span className="label">Speak</span>
         </button>
         <button className="control-button pause" onClick={PauseResponse} >
           {isPaused ? <Play size={20} /> : <PauseIcon size={20} />}
